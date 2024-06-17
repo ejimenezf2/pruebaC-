@@ -1,0 +1,24 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Oo]bj/
+[Bb]in/
+
+# Auto-generated files
+*.log
+*.tlog
+*.tmp
+
+# Package directories
+node_modules/
+dist/
+.vscode/
