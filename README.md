@@ -24,3 +24,6 @@ Asegúrate de tener instalado Visual Studio, o .Net 8 para utilizar comandos dot
   React tiene un login en el archivo query.sql tiene un usuario a insertar correo es test@test.com password admin123
 
   
+en el archivo appsettings.json cambiar la siguiente linea
+
+ "CadenaSQL": "Data Source=SuServer;Initial Catalog=BD;User ID=suUsuario;Password=suPassword;TrustServerCertificate=True", solo debe de cambiar los datos conforme a su acceso sql local o remoto solo cambiar los datos dentro de comillas no cambiar el nombre CadenaSQL ya     que es una referencia en todo el proyecto 
