@@ -45,3 +45,4 @@ C:\xampp\htdocs\PruebaTecnica\pruebaTecnica\pruebaTecnica\obj\Debug\net8.0\refin
 C:\xampp\htdocs\PruebaTecnica\pruebaTecnica\pruebaTecnica\obj\Debug\net8.0\pruebaTecnica.pdb
 C:\xampp\htdocs\PruebaTecnica\pruebaTecnica\pruebaTecnica\obj\Debug\net8.0\pruebaTecnica.genruntimeconfig.cache
 C:\xampp\htdocs\PruebaTecnica\pruebaTecnica\pruebaTecnica\obj\Debug\net8.0\ref\pruebaTecnica.dll
+C:\xampp\htdocs\PruebaTecnica\pruebaTecnica\pruebaTecnica\obj\Debug\net8.0\pruebaTecnica.sourcelink.json

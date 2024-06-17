@@ -28,6 +28,12 @@ namespace pruebaTecnica.Controllers
             Empleado objeto = await _empleadoData.Obtener(id);
             return StatusCode(StatusCodes.Status200OK, objeto);
         }
+        [HttpGet("Reporte/{id}")]
+        public async Task<IActionResult> Reporte(int id)
+        {
+            Empleado objeto = await _empleadoData.Reporte(id);
+            return StatusCode(StatusCodes.Status200OK, objeto);
+        }
 
         [HttpPost("Crear")]
         public async Task<IActionResult> Crear([FromBody] Empleado objeto)

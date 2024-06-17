@@ -33,6 +33,7 @@ namespace pruebaTecnica.Data
                             Nombre_Vacuna = reader["nombre_vacuna"].ToString(),
                             Estado_Vacuna = reader["estado_vacuna"].ToString(),
                             Fecha_Primer_Dosis = reader["fecha_primer_dosis"] != DBNull.Value ? (DateTime?)reader["fecha_primer_dosis"] : null,
+                            Fecha_Segunda_Dosis = reader["fecha_segunda_dosis"] != DBNull.Value ? (DateTime?)reader["fecha_segunda_dosis"] : null,
                         });
                     }
                 }
@@ -65,7 +66,8 @@ namespace pruebaTecnica.Data
                             Puesto_Laboral = reader["puesto_laboral"] != DBNull.Value ? reader["puesto_laboral"].ToString() : null,
                             Nombre_Vacuna = reader["nombre_vacuna"] != DBNull.Value ? reader["nombre_vacuna"].ToString() : null,
                             Estado_Vacuna = reader["estado_vacuna"] != DBNull.Value ? reader["estado_vacuna"].ToString() : null,
-                            Fecha_Primer_Dosis = reader["fecha_primer_dosis"] != DBNull.Value ? (DateTime?)reader["fecha_primer_dosis"] : null
+                            Fecha_Primer_Dosis = reader["fecha_primer_dosis"] != DBNull.Value ? (DateTime?)reader["fecha_primer_dosis"] : null,
+                            Fecha_Segunda_Dosis = reader["fecha_segunda_dosis"] != DBNull.Value ? (DateTime?)reader["fecha_segunda_dosis"] : null
 
                         };
                     }
@@ -87,6 +89,7 @@ namespace pruebaTecnica.Data
                 cmd.Parameters.AddWithValue("@puesto_laboral", objeto.Puesto_Laboral ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@id_vacuna", objeto.Id_Vacuna ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@fecha_primer_dosis", objeto.Fecha_Primer_Dosis ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@fecha_segunda_dosis", objeto.Fecha_Segunda_Dosis ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@estado_vacunacion", objeto.Estado_Vacunacion ?? (object)DBNull.Value);
 
                 try
@@ -117,6 +120,7 @@ namespace pruebaTecnica.Data
                 cmd.Parameters.AddWithValue("@puesto_laboral", objeto.Puesto_Laboral);
                 cmd.Parameters.AddWithValue("@id_vacuna", objeto.Id_Vacuna ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@fecha_primer_dosis", objeto.Fecha_Primer_Dosis ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@fecha_segunda_dosis", objeto.Fecha_Segunda_Dosis ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@estado_vacunacion", objeto.Estado_Vacunacion ?? (object)DBNull.Value);
                 cmd.CommandType = CommandType.StoredProcedure;
                 try
@@ -151,6 +155,38 @@ namespace pruebaTecnica.Data
                 }
             }
             return respuesta;
+        }
+        public async Task<Empleado> Reporte(int Id)
+        {
+            Empleado objeto = new Empleado();
+            using (var con = new SqlConnection(conexion))
+            {
+                await con.OpenAsync();
+                SqlCommand cmd = new SqlCommand("sp_obtenerEmpleadosConEstadoVacunacion", con);
+                cmd.Parameters.AddWithValue("@cod_empleado", Id);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        objeto = new Empleado
+                        {
+
+                            Cod_Empleado = reader["cod_empleado"] != DBNull.Value ? Convert.ToInt32(reader["cod_empleado"]) : 0,Nombre = reader["nombre"] != DBNull.Value ? reader["nombre"].ToString() : null,
+                            Apellido = reader["apellido"] != DBNull.Value ? reader["apellido"].ToString() : null,
+                            Puesto_Laboral = reader["puesto_laboral"] != DBNull.Value ? reader["puesto_laboral"].ToString() : null,
+                            Nombre_Vacuna = reader["nombre_vacuna"] != DBNull.Value ? reader["nombre_vacuna"].ToString() : null,
+                            Estado_Vacuna = reader["estado_plan_vacunacion"] != DBNull.Value ? reader["estado_plan_vacunacion"].ToString() : null,
+                            Fecha_Primer_Dosis = reader["fecha_primer_dosis"] != DBNull.Value ? (DateTime?)reader["fecha_primer_dosis"] : null,
+                            Fecha_Segunda_Dosis = reader["fecha_segunda_dosis"] != DBNull.Value ? (DateTime?)reader["fecha_segunda_dosis"] : null,
+                            Fecha_Segunda_Dosis_Calculada = reader["fecha_segunda_dosis_calculada"] != DBNull.Value ? (DateTime?)reader["fecha_segunda_dosis_calculada"] : null
+
+                        };
+                    }
+                }
+            }
+            return objeto;
         }
     }
 }

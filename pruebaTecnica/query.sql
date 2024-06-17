@@ -24,6 +24,14 @@ create table estado_vacunacion (
 INSERT INTO estado_vacunacion (nombre)
 VALUES ('protegido'), ('en progreso'), ('en riesgo');
 --tabla empleado
+
+INSERT INTO vacuna (nombre, fecha_creacion) VALUES ('Sinopharm', GETDATE());
+INSERT INTO vacuna (nombre, fecha_creacion) VALUES ('AstraZeneca', GETDATE());
+INSERT INTO vacuna (nombre, fecha_creacion) VALUES ('Sputnik V', GETDATE());
+INSERT INTO vacuna (nombre, fecha_creacion) VALUES ('Pfizer', GETDATE());
+INSERT INTO vacuna (nombre, fecha_creacion) VALUES ('Moderna', GETDATE());
+INSERT INTO vacuna (nombre, fecha_creacion) VALUES ('Janssen', GETDATE());
+
 CREATE TABLE empleado (
     cod_empleado INT PRIMARY KEY,
     nombre VARCHAR(50),
@@ -47,6 +55,7 @@ VALUES (
     '$2a$11$NaPKi6zfkpbtgnqEkMgTSeCOsqfe01SNGpav0GWwdz4KmDspOIZCm',
     CONVERT(date, GETDATE())
 );
+
 --SP que listaUsuarios
 create proc sp_listaUsuario
 as 
@@ -130,6 +139,7 @@ BEGIN
         e.puesto_laboral, 
         v.nombre AS nombre_vacuna, 
         e.fecha_primer_dosis, 
+		e.fecha_segunda_dosis, 
         ev.nombre AS estado_vacuna,
         e.estado
     FROM 
@@ -155,7 +165,8 @@ BEGIN
         e.fecha_creacion, 
         e.puesto_laboral, 
         v.nombre AS nombre_vacuna, 
-        e.fecha_primer_dosis, 
+        e.fecha_primer_dosis,
+		e.fecha_segunda_dosis, 
         ev.nombre AS estado_vacuna,
         e.estado,
 		e.id_vacuna,
@@ -179,6 +190,7 @@ CREATE PROCEDURE sp_crearEmpleado
     @puesto_laboral VARCHAR(50),
     @id_vacuna INT = NULL,
     @fecha_primer_dosis DATE = NULL,
+	@fecha_segunda_dosis DATE = NULL,
     @estado_vacunacion INT
 AS
 BEGIN
@@ -191,8 +203,8 @@ BEGIN
     END
 
     -- Insertar el nuevo empleado
-    INSERT INTO empleado (cod_empleado, nombre, apellido, fecha_creacion, puesto_laboral, id_vacuna, fecha_primer_dosis, estado, estado_vacunacion)
-    VALUES (@cod_empleado, @nombre, @apellido, GETDATE(), @puesto_laboral, @id_vacuna, @fecha_primer_dosis, 1, @estado_vacunacion);
+    INSERT INTO empleado (cod_empleado, nombre, apellido, fecha_creacion, puesto_laboral, id_vacuna, fecha_primer_dosis, fecha_segunda_dosis ,estado, estado_vacunacion)
+    VALUES (@cod_empleado, @nombre, @apellido, GETDATE(), @puesto_laboral, @id_vacuna, @fecha_primer_dosis,@fecha_segunda_dosis, 1, @estado_vacunacion);
 END;
 
 --SP que edita empleado buscando por Cod_empleado
@@ -202,7 +214,8 @@ CREATE PROCEDURE sp_editarEmpleado
     @apellido VARCHAR(50),
     @puesto_laboral VARCHAR(50),
     @id_vacuna INT,
-    @fecha_primer_dosis DATE,
+    @fecha_primer_dosis DATE = NULL,
+	@fecha_segunda_dosis DATE = NULL,
     @estado_vacunacion INT
 AS
 BEGIN
@@ -212,6 +225,7 @@ BEGIN
         puesto_laboral = @puesto_laboral,
         id_vacuna = @id_vacuna,
         fecha_primer_dosis = @fecha_primer_dosis,
+		fecha_segunda_dosis =@fecha_segunda_dosis,
         estado_vacunacion = @estado_vacunacion
     WHERE cod_empleado = @cod_empleado;
 END;
@@ -252,31 +266,29 @@ BEGIN
         e.puesto_laboral,
         e.id_vacuna,
         e.fecha_primer_dosis,
+        e.fecha_segunda_dosis,
         e.estado_vacunacion,
         v.nombre AS nombre_vacuna,
         ev.nombre AS estado_vacuna,
         CASE 
             WHEN e.id_vacuna IS NULL THEN 'en riesgo'
             WHEN v.nombre = 'Janssen' AND e.fecha_primer_dosis IS NOT NULL THEN 'protegido'
-            WHEN v.nombre IN ('Sinopharm', 'AstraZeneca', 'Sputnik V', 'Pfizer', 'Moderna') AND e.fecha_primer_dosis IS NOT NULL THEN 
+            WHEN v.nombre IN ('Sinopharm', 'AstraZeneca', 'Sputnik V', 'Pfizer', 'Moderna') THEN
                 CASE 
-                    WHEN v.nombre = 'Sinopharm' AND DATEADD(WEEK, 4, e.fecha_primer_dosis) <= GETDATE() THEN 'protegido'
-                    WHEN v.nombre = 'AstraZeneca' AND DATEADD(WEEK, 8, e.fecha_primer_dosis) <= GETDATE() THEN 'protegido'
-                    WHEN v.nombre = 'Sputnik V' AND DATEADD(DAY, 60, e.fecha_primer_dosis) <= GETDATE() THEN 'protegido'
-                    WHEN v.nombre = 'Pfizer' AND DATEADD(DAY, 21, e.fecha_primer_dosis) <= GETDATE() THEN 'protegido'
-                    WHEN v.nombre = 'Moderna' AND DATEADD(DAY, 28, e.fecha_primer_dosis) <= GETDATE() THEN 'protegido'
-                    ELSE 'en progreso'
+                    WHEN e.fecha_primer_dosis IS NOT NULL AND e.fecha_segunda_dosis IS NOT NULL THEN 'protegido'
+                    WHEN e.fecha_primer_dosis IS NOT NULL THEN 'en progreso'
+                    ELSE 'en riesgo'
                 END
             ELSE 'en progreso'
         END AS estado_plan_vacunacion,
         CASE 
-            WHEN v.nombre = 'Sinopharm' THEN DATEADD(WEEK, 4, e.fecha_primer_dosis)
-            WHEN v.nombre = 'AstraZeneca' THEN DATEADD(WEEK, 8, e.fecha_primer_dosis)
-            WHEN v.nombre = 'Sputnik V' THEN DATEADD(DAY, 60, e.fecha_primer_dosis)
-            WHEN v.nombre = 'Pfizer' THEN DATEADD(DAY, 21, e.fecha_primer_dosis)
-            WHEN v.nombre = 'Moderna' THEN DATEADD(DAY, 28, e.fecha_primer_dosis)
+            WHEN v.nombre = 'Sinopharm' THEN COALESCE(e.fecha_segunda_dosis, DATEADD(WEEK, 4, e.fecha_primer_dosis))
+            WHEN v.nombre = 'AstraZeneca' THEN COALESCE(e.fecha_segunda_dosis, DATEADD(WEEK, 8, e.fecha_primer_dosis))
+            WHEN v.nombre = 'Sputnik V' THEN COALESCE(e.fecha_segunda_dosis, DATEADD(DAY, 60, e.fecha_primer_dosis))
+            WHEN v.nombre = 'Pfizer' THEN COALESCE(e.fecha_segunda_dosis, DATEADD(DAY, 21, e.fecha_primer_dosis))
+            WHEN v.nombre = 'Moderna' THEN COALESCE(e.fecha_segunda_dosis, DATEADD(DAY, 28, e.fecha_primer_dosis))
             ELSE NULL
-        END AS fecha_segunda_dosis
+        END AS fecha_segunda_dosis_calculada
     FROM 
         empleado e
     LEFT JOIN 
@@ -286,4 +298,5 @@ BEGIN
     WHERE 
         e.cod_empleado = @cod_empleado
 END;
+
 exec sp_obtenerEmpleadosConEstadoVacunacion @cod_empleado = 324
